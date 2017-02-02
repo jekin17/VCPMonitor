@@ -76,19 +76,20 @@ void Set_lcd_window(unsigned char X_beg, unsigned char X_end, unsigned char Y_st
 	LCD_Write_Data_16(0, Y_end);
 }
 //******************************************************************************//
-void Clr_Window_Set_Fon(unsigned char X_beg, unsigned char X_end, unsigned char Y_beg, unsigned char Y_end, unsigned int Fon_color) {
-unsigned char W = X_end - X_beg + 1;
-unsigned char H = Y_end - Y_beg + 1;
-unsigned char Back_color_l = Fon_color;
-unsigned char Back_color_h = Fon_color>>8;
+void Clr_Window_Set_Fon(unsigned char X_beg, unsigned char X_end, unsigned char Y_beg, unsigned char Y_end, unsigned int Fon_color)
+	{
+		unsigned char W = X_end - X_beg + 1;
+		unsigned char H = Y_end - Y_beg + 1;
+		unsigned char Back_color_l = Fon_color;
+		unsigned char Back_color_h = Fon_color>>8;
 
-	Set_lcd_window(X_beg, X_end, Y_beg, Y_end);					// выбираем диапазон вывода на экран
-	LCD_Write_Cmd(RAMWR);										// запись в память дисплея
-	for(H=0; H < Y_RESOLUTION; H++) {
-		for(W=0; W < X_RESOLUTION; W++) {
-			LCD_Write_Data_16(Back_color_h, Back_color_l);
+		Set_lcd_window(X_beg, X_end, Y_beg, Y_end);					// выбираем диапазон вывода на экран
+		LCD_Write_Cmd(RAMWR);										// запись в память дисплея
+		for(H=0; H < Y_RESOLUTION; H++) {
+			for(W=0; W < X_RESOLUTION; W++) {
+				LCD_Write_Data_16(Back_color_h, Back_color_l);
+			}
 		}
-	}
 }
 //=========================================================================================================//
 //=========================================================================================================//
@@ -107,189 +108,194 @@ void LCD_Initial(void)
 		LCD_Write_Cmd(COLMOD);
 		LCD_Write_Data_8(0x05);					                // 	MCU interface color format - 16bit / RGB - 16bit
 		LCD_Write_Cmd(MADCTRL);
-		LCD_Write_Data_8(0xD0);
-	//Set_lcd_window(0, X_PIX_MAX, 0, Y_PIX_MAX);
-       Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, WHITE);
+		LCD_Write_Data_8(0x10);
+		Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, WHITE);
 }
 //=========================================================================================================//
 //=========================================================================================================//
 //
-void Bin_To_Bcd(unsigned int Bin_data) {
-	Bcd_data[0] = ' ';
-	Bcd_data[1] = ' ';
-	Bcd_data[2] = ' ';
-	Bcd_data[3] = ' ';
-	Bcd_data[4] = '0';
-	if(Bin_data >= 10000) {
-		Bcd_data[0]='0';
-		Bcd_data[1]='0';
-		Bcd_data[2]='0';
-		Bcd_data[3]='0';
-		Bcd_data[4]='0';
-	}	
-	while (Bin_data >= 10000) {
-		Bin_data -= 10000;
-		Bcd_data[0]++;
-	}
-	if(Bin_data >= 1000) {
-		Bcd_data[1]='0';
-		Bcd_data[2]='0';
-		Bcd_data[3]='0';
-		Bcd_data[4]='0';
-	}
-	while(Bin_data >= 1000) {
-		Bin_data -= 1000;
-		Bcd_data[1]++;
-	}
-	if(Bin_data >= 100) {
-		Bcd_data[2]='0';
-		Bcd_data[3]='0';
-		Bcd_data[4]='0';
-	}
-	while(Bin_data >= 100) {
-		Bin_data -= 100;
-		Bcd_data[2]++;
-	}
-	if(Bin_data >= 10) {
-		Bcd_data[3]='0';
-		Bcd_data[4]='0';
-	}
-	while(Bin_data >= 10) {
-		Bin_data -= 10;
-		Bcd_data[3]++;
-	}
-	Bcd_data[4] += (unsigned char)Bin_data;
-}
-//=========================================================================================================//
-//=========================================================================================================//
-//
-void Put_Str_to_Lcd(unsigned char X_pos, unsigned char Y_pos, unsigned char Font_index, const char *Str, unsigned int Txt_color, unsigned int Back_color) {	
-unsigned int Char_index = 0;															// переменная - код символа
-unsigned char Gliph = 0;																// переменная - байт изображения символа 
-unsigned char Gliph_ptr = 0;															// счётчик пикселей для видеобуфера
-unsigned char X_pixel = 0;																// значения ширины символа
-unsigned char Y_pixel = 0;																// значения высоты символа
-unsigned int Pixel_ptr = 0;									
-unsigned char Bit_mask = 0x80;															// маска для выбора бита из байта изображения символа
-unsigned char Txt_color_l = Txt_color;									// младший байт цвета текста 
-unsigned char Txt_color_h = Txt_color >> 8;								// старший байт цвета текста
-unsigned char Back_color_l = Back_color;									// младший бат цвта фона
-unsigned char Back_color_h = Back_color >> 8;								// старший байт цвета фона
-unsigned char X_X, Y_Y;	
-unsigned char X = X_pos;
-unsigned char Y = Y_pos;
-//unsigned int Index = 0;
-unsigned int Last_X_pos = X_pos;
-//unsigned int Last_Y_pos = 0;
-				
-	while(*Str!=0x00) {
-		Char_index = (unsigned char) *Str;
-		Char_index -= Font[Font_index].Font_offset;										/////////////////////
-		X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;					// получение значения ширины символа
-		Y_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;					// получение значения высоты символа
-		X = (unsigned char)Last_X_pos;
-		X_X = (X + X_pixel)-1;
-		Y_Y = Y + Y_pixel-1;
-		Set_lcd_window(X, X_X, Y, Y_Y);
-		LCD_Write_Cmd(RAMWR);																// запись в память дисплея
-		while(Y_pixel != 0x00) {
-			while(X_pixel != 0x00) {														// если не превыслили границу ширины символа выводим очередной бит
-				Gliph = Font[Font_index].Char[Char_index].Image->Gliph[Gliph_ptr];			// выбираем очередной байт изображения символа
-				if(Bit_mask != 0x00) {														// если непревысили диапазон байта продолжаем
-											
-					if(Gliph & Bit_mask) {	
-						LCD_Write_Data_16(Txt_color_h, Txt_color_l);
-					}	
-					else {
-						LCD_Write_Data_16(Back_color_h, Back_color_l);
-					}
-					Pixel_ptr += 2;
-					X_pixel--;																// уменьшаем счётчик ширины символа
-					Bit_mask >>= 1;															// маска для следующего бита изображения
-				}
-				else {
-					Bit_mask = 0x80;														// устанавливаем маску для очередного байта изображения символа
-					Gliph_ptr++;															// увеличиваем указатель - на следующий байт изображения символа
-				}	
-			}
-			Y_pixel--;
-			Bit_mask = 0x80;															// устанавливаем маску для очередного байта изображения символа
-			Gliph_ptr++;																// увеличиваем указатель - на следующий байт изображения символа																		// 
-			X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;				// получение значения ширины символа
+void Bin_To_Bcd(unsigned int Bin_data)
+	{
+		Bcd_data[0] = ' ';
+		Bcd_data[1] = ' ';
+		Bcd_data[2] = ' ';
+		Bcd_data[3] = ' ';
+		Bcd_data[4] = '0';
+		if(Bin_data >= 10000) {
+			Bcd_data[0]='0';
+			Bcd_data[1]='0';
+			Bcd_data[2]='0';
+			Bcd_data[3]='0';
+			Bcd_data[4]='0';
+		}	
+		while (Bin_data >= 10000) {
+			Bin_data -= 10000;
+			Bcd_data[0]++;
 		}
-		Last_X_pos += X_pixel;
-		Pixel_ptr = 0;																	
-		Bit_mask = 0x80;
-		Gliph_ptr = 0;
-		Str++; 																			// увеличиваем указатель для выборки следующего символа из строки
-	}	
+		if(Bin_data >= 1000) {
+			Bcd_data[1]='0';
+			Bcd_data[2]='0';
+			Bcd_data[3]='0';
+			Bcd_data[4]='0';
+		}
+		while(Bin_data >= 1000) {
+			Bin_data -= 1000;
+			Bcd_data[1]++;
+		}
+		if(Bin_data >= 100) {
+			Bcd_data[2]='0';
+			Bcd_data[3]='0';
+			Bcd_data[4]='0';
+		}
+		while(Bin_data >= 100) {
+			Bin_data -= 100;
+			Bcd_data[2]++;
+		}
+		if(Bin_data >= 10) {
+			Bcd_data[3]='0';
+			Bcd_data[4]='0';
+		}
+		while(Bin_data >= 10) {
+			Bin_data -= 10;
+			Bcd_data[3]++;
+		}
+		Bcd_data[4] += (unsigned char)Bin_data;
 }
 //=========================================================================================================//
 //=========================================================================================================//
 //
-void Put_Val_to_Lcd(unsigned char X_pos, unsigned char Y_pos, unsigned char Font_index, unsigned int Bin_data, unsigned int Txt_color, unsigned int Back_color) {
-unsigned int Char_index = 0;															// переменная - код символа
-unsigned char Gliph = 0;																// переменная - байт изображения символа 
-unsigned char Gliph_ptr = 0;															// счётчик пикселей для видеобуфера
-unsigned char X_pixel = 0;																// значения ширины символа
-unsigned char Y_pixel = 0;																// значения высоты символа
-unsigned int Pixel_ptr = 0;									
-unsigned char Bit_mask = 0x80;															// маска для выбора бита из байта изображения символа
-unsigned char Txt_color_l = Txt_color;									// младший байт цвета текста 
-unsigned char Txt_color_h = Txt_color >> 8;								// старший байт цвета текста
-unsigned char Back_color_l = Back_color;									// младший бат цвта фона
-unsigned char Back_color_h = Back_color >> 8;								// старший байт цвета фона
-unsigned char X_X, Y_Y;	
-unsigned char X = X_pos;
-unsigned char Y = Y_pos;
-unsigned int Last_X_pos = X_pos;
-//unsigned int Last_Y_pos = 0;
-unsigned char 	Data_index;
+void Put_Str_to_Lcd(unsigned char Y_pos, unsigned char X_pos, unsigned char Font_index, const char *Str, unsigned int Txt_color, unsigned int Back_color)
+	{	
+		
+		unsigned int Char_index = 0;															// переменная - код символа
+		unsigned char Gliph = 0;																// переменная - байт изображения символа 
+		unsigned char Gliph_ptr = 0;															// счётчик пикселей для видеобуфера
+		unsigned char X_pixel = 0;																// значения ширины символа
+		unsigned char Y_pixel = 0;																// значения высоты символа								
+		unsigned char Bit_mask = 0x80;															// маска для выбора бита из байта изображения символа
+		unsigned char Txt_color_l = Txt_color;									// младший байт цвета текста 
+		unsigned char Txt_color_h = Txt_color >> 8;								// старший байт цвета текста
+		unsigned char Back_color_l = Back_color;									// младший бат цвта фона
+		unsigned char Back_color_h = Back_color >> 8;								// старший байт цвета фона
+		unsigned char Y_Y;
+		unsigned char X_X = X_PIX_MAX - X_pos;
+		unsigned char X = 0;
+		unsigned char Y = Y_pos;
+		unsigned char Last_Y_pos = Y_pos;
+
 				
-	Bin_To_Bcd(Bin_data);
-	Data_index = 0;
-	while(Data_index <= 4) {
-		Char_index = (unsigned char) Bcd_data[Data_index];
-		Char_index -= Font[Font_index].Font_offset;										/////////////////////
-		X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;					// получение значения ширины символа
-		Y_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;					// получение значения высоты символа
-		X = (unsigned char)Last_X_pos;
-		X_X = (X + X_pixel)-1;
-		Y_Y = Y + Y_pixel-1;
-		Set_lcd_window(X, X_X, Y, Y_Y);
-		LCD_Write_Cmd(RAMWR);	                                				// запись в память дисплея
-                
-		while(Y_pixel != 0x00) {
-			while(X_pixel != 0x00) {														// если не превыслили границу ширины символа выводим очередной бит
-				Gliph = Font[Font_index].Char[Char_index].Image->Gliph[Gliph_ptr];			// выбираем очередной байт изображения символа
-				if(Bit_mask != 0x00) {														// если непревысили диапазон байта продолжаем
-											
-					if(Gliph & Bit_mask) {	
-						LCD_Write_Data_16(Txt_color_h, Txt_color_l);
-					}	
-					else {
-						LCD_Write_Data_16(Back_color_h, Back_color_l);
+		while(*Str!=0x00)
+		{
+			Char_index = (unsigned char) *Str;
+			Char_index -= Font[Font_index].Font_offset;											/////////////////////
+			X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;					// получение значения высота символа
+			Y_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;						// получение значения ширина символа
+			Y = Last_Y_pos;
+			X = (X_X - X_pixel)+1;
+			Y_Y = (Y + Y_pixel)-1;
+			Last_Y_pos = Y_Y;
+			Set_lcd_window(X, X_X, Y, Y_Y);
+			LCD_Write_Cmd(RAMWR);																// запись в память дисплея
+			while(Y_pixel != 0x00) 
+			{
+				while(X_pixel != 0x00)
+				{																				// если не превыслили границу ширины символа выводим очередной бит
+					Gliph = Font[Font_index].Char[Char_index].Image->Gliph[Gliph_ptr];			// выбираем очередной байт изображения символа
+					if(Bit_mask != 0x00)
+					{																			// если непревысили диапазон байта продолжаем							
+						if(Gliph & Bit_mask)
+						{	
+							LCD_Write_Data_16(Txt_color_h, Txt_color_l);
+						}	
+						else
+						{
+							LCD_Write_Data_16(Back_color_h, Back_color_l);
+						}
+						X_pixel--;																// уменьшаем счётчик ширины символа
+						Bit_mask >>= 1;															// маска для следующего бита изображения
 					}
-					Pixel_ptr += 2;
-					X_pixel--;																// уменьшаем счётчик ширины символа
-					Bit_mask >>= 1;															// маска для следующего бита изображения
+					else
+					{
+						Bit_mask = 0x80;														// устанавливаем маску для очередного байта изображения символа
+						Gliph_ptr++;															// увеличиваем указатель - на следующий байт изображения символа
+					}	
 				}
-				else {
-					Bit_mask = 0x80;														// устанавливаем маску для очередного байта изображения символа
-					Gliph_ptr++;															// увеличиваем указатель - на следующий байт изображения символа
-				}	
+				Y_pixel--;
+				X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;				// получение значения высоты символа
+			}																	
+			Bit_mask = 0x80;
+			Gliph_ptr = 0;
+			Str++; 																			// увеличиваем указатель для выборки следующего символа из строки
+		}	
+}
+//=========================================================================================================//
+//=========================================================================================================//
+//
+void Put_Val_to_Lcd(unsigned char Y_pos, unsigned char X_pos, unsigned char Font_index, unsigned int Bin_data, unsigned int Txt_color, unsigned int Back_color) 
+	{
+		unsigned int Char_index = 0;															// переменная - код символа
+		unsigned char Gliph = 0;																// переменная - байт изображения символа 
+		unsigned char Gliph_ptr = 0;															// счётчик пикселей для видеобуфера
+		unsigned char X_pixel = 0;																// значения ширины символа
+		unsigned char Y_pixel = 0;																// значения высоты символа
+		unsigned int Pixel_ptr = 0;									
+		unsigned char Bit_mask = 0x80;															// маска для выбора бита из байта изображения символа
+		unsigned char Txt_color_l = Txt_color;									// младший байт цвета текста 
+		unsigned char Txt_color_h = Txt_color >> 8;								// старший байт цвета текста
+		unsigned char Back_color_l = Back_color;									// младший бат цвта фона
+		unsigned char Back_color_h = Back_color >> 8;								// старший байт цвета фона
+		unsigned char Y_Y;
+		unsigned char X_X = X_PIX_MAX - X_pos;
+		unsigned char X = 0;
+		unsigned char Y = Y_pos;
+		unsigned char Last_Y_pos = Y_pos;
+		unsigned char 	Data_index;
+				
+		Bin_To_Bcd(Bin_data);
+		Data_index = 0;
+		while(Data_index <= 4) 
+		{
+			Char_index = (unsigned char) Bcd_data[Data_index];
+			Char_index -= Font[Font_index].Font_offset;											/////////////////////
+			X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;					// получение значения высота символа
+			Y_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;						// получение значения ширина символа
+			Y = Last_Y_pos;
+			X = (X_X - X_pixel)+1;
+			Y_Y = (Y + Y_pixel)-1;
+			Last_Y_pos = Y_Y;
+			Set_lcd_window(X, X_X, Y, Y_Y);
+			LCD_Write_Cmd(RAMWR);			
+			while(Y_pixel != 0x00) 
+			{
+				while(X_pixel != 0x00)
+				{																				// если не превыслили границу ширины символа выводим очередной бит
+					Gliph = Font[Font_index].Char[Char_index].Image->Gliph[Gliph_ptr];			// выбираем очередной байт изображения символа
+					if(Bit_mask != 0x00)
+					{																			// если непревысили диапазон байта продолжаем							
+						if(Gliph & Bit_mask)
+						{	
+							LCD_Write_Data_16(Txt_color_h, Txt_color_l);
+						}	
+						else
+						{
+							LCD_Write_Data_16(Back_color_h, Back_color_l);
+						}
+						X_pixel--;																// уменьшаем счётчик ширины символа
+						Bit_mask >>= 1;															// маска для следующего бита изображения
+					}
+					else
+					{
+						Bit_mask = 0x80;														// устанавливаем маску для очередного байта изображения символа
+						Gliph_ptr++;															// увеличиваем указатель - на следующий байт изображения символа
+					}	
+				}
+				Y_pixel--;
+				X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_height;				// получение значения высоты символа
 			}
-			Y_pixel--;
-			Bit_mask = 0x80;															// устанавливаем маску для очередного байта изображения символа
-			Gliph_ptr++;																// увеличиваем указатель - на следующий байт изображения символа																		// 
-			X_pixel = Font[Font_index].Char[Char_index].Image->Gliph_wight;				// получение значения ширины символа
-		}
-		Last_X_pos += X_pixel;
-		Pixel_ptr = 0;																	
-		Bit_mask = 0x80;
-		Gliph_ptr = 0;
-		Data_index++;																			// увеличиваем указатель для выборки следующего символа из строки
-	}	
+			Bit_mask = 0x80;
+			Gliph_ptr = 0;
+			Data_index++;																			// увеличиваем указатель для выборки следующего символа из строки
+		}	
 }	
 //=========================================================================================================//
 //=========================================================================================================//

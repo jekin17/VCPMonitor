@@ -104,6 +104,8 @@ void TASK_ADE(void const * argument)
     while(1)
     {
 		ade7753_16 = ADE7753_Read(MODE, 2);
+		Put_Str_to_Lcd(0, 40, Eng, "ADE(MODE) - ", YELLOW, BLACK);
+		Put_Val_to_Lcd(90, 40, Eng, ade7753_16, YELLOW, BLACK);
 		printf("ADE (MODE ) - ");
 		printf("%.2d", ade7753_16);
 		printf("\n\r");
@@ -145,8 +147,10 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 	LCD_Initial();
-	Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, BLUE);
-	Put_Str_to_Lcd(0,0,Eng," VCPMonitor ", BLACK, BLUE);
+	Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, BLACK);
+	Put_Str_to_Lcd(20, 40, Eng," VCPMonitor ", RED, BLACK);
+	HAL_Delay(3000);
+	Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, BLACK);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
