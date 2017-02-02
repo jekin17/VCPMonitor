@@ -93,15 +93,8 @@ void TASK_LED2(void const * argument)
 {
     while(1)
     {
-		ade7753_16 = ADE7753_Read(MODE, 2);
-		printf("ADE (MODE ) - ");
-		printf("%.2d", ade7753_16);
-		printf("\n\r");
-		ade7753_8 = ADE7753_Read(DIEREV, 1);
-		printf("ADE (DIEREV ) - ");
-		printf("%.2d", ade7753_8);
-		printf("\n\r");
-		 
+		//printf("\n\r");
+		HAL_GPIO_WritePin(RELAY1_GPIO_Port, RELAY1_Pin, GPIO_PIN_RESET);
 		osDelay(500);
     }
 }
@@ -111,9 +104,16 @@ void TASK_ADE(void const * argument)
     while(1)
     {
 		//printf("ADE_not found eat");
-		printf("\n\r");
-		HAL_GPIO_WritePin(RELAY1_GPIO_Port, RELAY1_Pin, GPIO_PIN_RESET);
 		
+		ade7753_16 = ADE7753_Read(MODE, 2);
+		printf("ADE (MODE ) - ");
+		printf("%.2d", ade7753_16);
+		printf("\n\r");
+		ade7753_8 = ADE7753_Read(DIEREV, 1);
+		printf("ADE (DIEREV ) - ");
+		printf("%.2d", ade7753_8);
+		printf("\n\r");
+		 
 		//printf("\f\r");
         //printf("%.2d", );
         //printf(",");        
