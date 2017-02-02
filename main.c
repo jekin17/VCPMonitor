@@ -103,8 +103,6 @@ void TASK_ADE(void const * argument)
 {
     while(1)
     {
-		//printf("ADE_not found eat");
-		
 		ade7753_16 = ADE7753_Read(MODE, 2);
 		printf("ADE (MODE ) - ");
 		printf("%.2d", ade7753_16);
