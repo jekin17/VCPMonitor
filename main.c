@@ -61,6 +61,7 @@ osThreadId defaultTaskHandle;
 
 uint8_t ade7753_8  = 0;
 uint16_t ade7753_16 = 0;
+uint32_t ade7753_32 = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,8 +83,8 @@ void TASK_LED1(void const * argument)
 {
     while(1)
     {
-        printf("Task1 is runing...");
-        printf("\n\r");
+        //printf("Task1 is runing...");
+        //printf("\n\r");
         HAL_GPIO_TogglePin(RELAY2_GPIO_Port, RELAY2_Pin);
         osDelay(500);
     }
@@ -103,17 +104,47 @@ void TASK_ADE(void const * argument)
 {
     while(1)
     {
-		ade7753_16 = ADE7753_Read(MODE, 2);
-		Put_Str_to_Lcd(0, 40, Eng, "ADE(MODE) - ", YELLOW, BLACK);
-		Put_Val_to_Lcd(90, 40, Eng, ade7753_16, YELLOW, BLACK);
+		ade7753_16 = Get_VPEAK();
+		Put_Str_to_Lcd(0, 40, Eng, "ADE(VPEAK) - ", YELLOW, BLACK);
+		Put_Val_to_Lcd(99, 40, Eng, ade7753_16, YELLOW, BLACK);
+		
+		
+		printf("\f");
+		
 		printf("ADE (MODE ) - ");
-		printf("%.2d", ade7753_16);
+		printf("%.2d", ADE7753Read(adeMODE, 2));
 		printf("\n\r");
-		ade7753_8 = ADE7753_Read(DIEREV, 1);
-		printf("ADE (DIEREV ) - ");
-		printf("%.2d", ade7753_8);
+		
+		printf("ADE (STATUS ) - ");
+		printf("%.2d", ADE7753Read(adeSTATUS, 2));
+		printf("\n\r");
+		
+		printf("ADE (VPEAK ) - ");
+		printf("%.2d", ADE7753Read(adeVPEAK, 3));
+		printf("\n\r");
+		
+		printf("ADE (IPEAK ) - ");
+		printf("%.2d", ADE7753Read(adeIPEAK, 3));
+		printf("\n\r");
+		
+		printf("ADE (VRMS ) - ");
+		printf("%.2d", ADE7753Read(adeVRMS, 3));
+		printf("\n\r");
+		
+		printf("ADE (IRMS ) - ");
+		printf("%.2d", ADE7753Read(adeIRMS, 3));
+		printf("\n\r");
+		
+		printf("ADE (PERIOD ) - ");
+		printf("%.2d", ADE7753Read(adePERIOD, 2));
+		printf("\n\r");
+		
+		printf("ADE (TEMPER ) - ");
+		printf("%.2d", ADE7753Read(adeTEMP, 1));
 		printf("\n\r");
 		 
+		 
+
 		//printf("\f\r");
         //printf("%.2d", );
         //printf(",");        
@@ -151,6 +182,7 @@ int main(void)
 	Put_Str_to_Lcd(20, 40, Eng," VCPMonitor ", RED, BLACK);
 	HAL_Delay(3000);
 	Clr_Window_Set_Fon(0, X_PIX_MAX, 0, Y_PIX_MAX, BLACK);
+	//ADE7753Init();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -449,7 +481,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;

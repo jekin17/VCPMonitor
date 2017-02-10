@@ -98,9 +98,9 @@ void LCD_Initial(void)
 	{
 		LCD_Reset();								
 		LCD_Write_Cmd(SWRESET);					                //	Software reset
-		Delay_ms(120);                                          //Delay_ms(120);							        //	задержка 120ms
+		DelayMs(120);                                          //Delay_ms(120);							        //	задержка 120ms
 		LCD_Write_Cmd(SLPOUT);					                //	Sleep out
-		Delay_ms(120);                                          //Delay_ms(10);							        //	Задержка 5ms
+		DelayMs(120);                                          //Delay_ms(10);							        //	Задержка 5ms
 		LCD_Write_Cmd(INVOFF);					                //	INVOFF
 		LCD_Write_Cmd(IDMOFF);					                //	
 		LCD_Write_Cmd(NORON);					                //	
